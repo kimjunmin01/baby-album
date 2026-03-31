@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Serif+KR:wght@300;400;500&display=swap');
 
-/* ─── 전체 배경 ─── */
+/* 전체 배경 */
 .intro {
   width: 100vw;
   height: 100vh;
@@ -13,7 +13,7 @@
   overflow: hidden;
 }
 
-/* ─── 배경 파티클 ─── */
+/* 배경 파티클 */
 .intro-particles {
   position: absolute;
   inset: 0;
@@ -37,7 +37,7 @@
   100% { transform: translateY(110vh) translateX(30px) rotate(540deg) scale(2); opacity: 0; }
 }
 
-/* ─── 앨범 씬: 빨려 들어가는 Zoom-in 효과 ─── */
+/* 앨범 씬 */
 .album-scene {
   position: relative;
   width: 220px;
@@ -49,11 +49,39 @@
     albumZoomIn 3.8s cubic-bezier(0.7, 0, 0.3, 1) forwards;
 }
 
+/* ─── [추가] 앨범 본체 두께감 (Shadow Stack) ─── */
+.album-body {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  border-radius: 4px 12px 12px 4px;
+  transform-style: preserve-3d;
+  /* 1px 단위로 그림자를 쌓아 종이 뭉치 느낌 구현 */
+  box-shadow: 
+    1px 0 0 #dbdbdb, 
+    2px 0 0 #f0f0f0, 
+    3px 0 0 #dbdbdb, 
+    4px 0 0 #f0f0f0, 
+    5px 0 0 #dbdbdb,
+    8px 14px 44px rgba(90, 60, 30, 0.15);
+}
+
+/* ─── [추가] 책등 (옆면 두께) ─── */
+.album-spine {
+  position: absolute;
+  left: -6px;
+  top: 0;
+  width: 12px;
+  height: 100%;
+  background: linear-gradient(to right, #a8862e, #d4af37, #a8862e);
+  transform: rotateY(-90deg);
+  transform-origin: right;
+  border-radius: 2px 0 0 2px;
+}
+
 @keyframes albumZoomIn {
   0% { transform: scale(1) translateZ(0); opacity: 1; }
-  /* 커버가 열리기 시작하면 서서히 다가옴 */
   50% { transform: scale(1.1) translateZ(100px); opacity: 1; }
-  /* 마지막에 화면을 완전히 덮으며 사라짐 */
   90% { transform: scale(8) translateZ(1200px); opacity: 0.5; }
   100% { transform: scale(12) translateZ(2000px); opacity: 0; }
 }
@@ -63,18 +91,18 @@
   50% { margin-top: -12px; }
 }
 
-/* ─── 뒷 페이지 (앨범 내부 문구) ─── */
+/* 뒷 페이지 */
 .album-page-back {
   position: absolute;
   inset: 0;
   background: #fff;
   border-radius: 4px 12px 12px 4px;
-  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  z-index: 1;
 }
 
 .album-inner-text {
@@ -108,7 +136,7 @@
   90%, 100% { opacity: 1; }
 }
 
-/* ─── 앞 커버 ─── */
+/* 앞 커버 (기존 유지) */
 .album-cover {
   position: absolute;
   inset: 0;
@@ -125,33 +153,84 @@
   100% { transform: rotateY(-172deg); }
 }
 
+/* ─── 앨범 커버 내부 (배경 색상 변경) ─── */
 .cover-inner {
   width: 100%; height: 100%;
-  background: linear-gradient(135deg, #c8a84b 0%, #f0d060 35%, #d4af37 65%, #a8862e 100%);
+  /* 기존보다 부드럽고 깊이감 있는 샴페인 골드 그라데이션으로 변경 */
+  background: linear-gradient(135deg, #e7d19a 0%, #d4af37 40%, #c5a028 70%, #b38b1d 100%);
   border-radius: 4px 12px 12px 4px;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 6px; padding: 22px; backface-visibility: hidden;
+  gap: 8px; padding: 22px; 
+  backface-visibility: hidden;
+  /* 입체감을 위한 내부 그림자 추가 */
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.1);
+  border: 0.5px solid rgba(255, 255, 255, 0.3);
 }
 
-/* 코너 장식 */
-.corner { position: absolute; width: 20px; height: 20px; border-color: rgba(255, 255, 255, 0.6); border-style: solid; }
-.corner.tl { top: 13px; left: 13px; border-width: 1.2px 0 0 1.2px; }
-.corner.tr { top: 13px; right: 13px; border-width: 1.2px 1.2px 0 0; }
-.corner.bl { bottom: 13px; left: 13px; border-width: 0 0 1.2px 1.2px; }
-.corner.br { bottom: 13px; right: 13px; border-width: 0 1.2px 1.2px 0; }
+/* ─── 코너 장식 (더 얇고 선명하게) ─── */
+.corner { 
+  position: absolute; width: 24px; height: 24px; 
+  border-color: rgba(255, 255, 255, 0.8); 
+  border-style: solid; 
+}
+.corner.tl { top: 15px; left: 15px; border-width: 1px 0 0 1px; }
+.corner.tr { top: 15px; right: 15px; border-width: 1px 1px 0 0; }
+.corner.bl { bottom: 15px; left: 15px; border-width: 0 0 1px 1px; }
+.corner.br { bottom: 15px; right: 15px; border-width: 0 1px 1px 0; }
 
-.cover-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; color: #fff; letter-spacing: 0.32em; text-transform: uppercase; }
-.cover-divider { width: 56px; height: 1px; background: rgba(255, 255, 255, 0.7); margin: 4px 0; }
-.cover-names { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 14px; color: #fff; }
-.cover-date { font-family: 'Cormorant Garamond', serif; font-size: 10px; color: rgba(255, 255, 255, 0.7); }
+/* ─── 텍스트 스타일 수정 ─── */
+
+/* 메인 타이틀: 가독성을 위해 색상을 화이트로 변경하고 두께 강화 */
+.cover-title { 
+  font-family: 'Cormorant Garamond', serif; 
+  font-size: 18px; 
+  font-weight: 600; /* 글자 두께를 더 두껍게 설정 */
+  color: #ffffff; 
+  letter-spacing: 0.4em; /* 자간을 살짝 조절하여 세련미 유지 */
+  text-transform: uppercase; 
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+  margin-bottom: 4px;
+}
+
+/* 구분선: 더 깔끔하게 조절 */
+.cover-divider { 
+  width: 40px; 
+  height: 1px; 
+  background: rgba(255, 255, 255, 0.8); 
+  margin: 6px 0; 
+}
+
+/* 이름 부분: 폰트 크기를 키우고 이태릭 강조 */
+.cover-names { 
+  font-family: 'Cormorant Garamond', serif; 
+  font-style: italic; 
+  font-size: 16px; 
+  font-weight: 500;
+  color: #fff; 
+  letter-spacing: 0.1em;
+}
+
+/* 날짜 부분: 폰트 두께 조절 */
+.cover-date { 
+  font-family: 'Cormorant Garamond', serif; 
+  font-size: 11px; 
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.9); 
+  margin-top: 4px;
+}
 
 /* ─── 하단 문구 ─── */
 .intro-footer {
-  margin-top: 46px; opacity: 0;
+  margin-top: 46px; 
+  opacity: 0;
   animation: 
     fadeUp 1s ease 1.8s forwards,
     fadeOut 0.8s ease 3.1s forwards;
-  font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 13px; color: #9a8060;
+  font-family: 'Cormorant Garamond', serif; 
+  font-style: italic; 
+  font-size: 14px; 
+  font-weight: 400;
+  color: #8a704d; /* 배경과 더 잘 어우러지는 톤으로 수정 */
 }
 
 @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
