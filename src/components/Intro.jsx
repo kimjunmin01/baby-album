@@ -22,10 +22,9 @@ function Intro({ onFinish }) {
            {/* 앨범이 열리면 나타나는 안내 문구 */}
            <div className="album-inner-text">
              <p>우리의 소중한</p>
-             <p>기록이 시작됩니다</p>
+             <p>앨범</p>
            </div>
         </div>
-
         {/* 앞 커버: 3D 회전하며 오픈 */}
         <div className="album-cover">
           <div className="cover-inner">
@@ -44,16 +43,13 @@ function Intro({ onFinish }) {
               </svg>
             </div>
 
-            <h2 className="cover-title">Wedding Album</h2>
+            <h2 className="cover-title">POTTO ALBUM</h2>
             <div className="cover-divider" />
             <p className="cover-names">JiHong ♥ SeRan</p>
             <p className="cover-date">2026 · 03 · 30</p>
           </div>
         </div>
       </div>
-
-      {/* 3. 하단 문구 */}
-      <p className="intro-footer">Opening your memories…</p>
     </div>
   );
 }

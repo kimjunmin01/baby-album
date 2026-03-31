@@ -38,11 +38,11 @@ function Home() {
 
       {/* ─── 3. 메인 타이틀 섹션 ─── */}
       <div className="home-header">
-        <p className="home-label">Wedding Album</p>
+        <p className="home-label">POTTO ALBUM</p>
         <h1 className="title">
           배지홍 <span className="heart">♥</span> 김세란
         </h1>
-        <p className="subtitle">Our Memories</p>
+        
         
         <div className="header-divider">
           <div className="divider-line" />
@@ -51,9 +51,9 @@ function Home() {
         </div>
 
         <p className="desc">
-          서로의 시간을 함께 걸어온 두 사람이<br />
-          하나의 이야기가 되는 순간<br />
-          <em>이 앨범에 우리의 가장 소중한 기억을 담았습니다.</em>
+          우연히 시작되어 필연이 된 우리의 인연이<br />
+          이제는 세상에서 가장 단단한 사랑이 되었습니다.<br />
+          <em>지홍과 세란, 두 사람의 첫 페이지를 이곳에 펼칩니다.</em>
         </p>
       </div>
 
@@ -70,7 +70,7 @@ function Home() {
           <div className="divider-line r" />
         </div>
         <p className="footer-date">2026 · 03 · 30</p>
-        <p className="footer-sub">Forever Together</p>
+        <p className="footer-sub">POTTO ALBUM</p>
       </div>
     </div>
   );

@@ -2,9 +2,11 @@ import { useRef, useState, useEffect } from "react";
 import "../styles/carousel.css";
 
 function Carousel({ images }) {
-  const [active, setActive]         = useState(0);
-  const [isModal, setIsModal]       = useState(false);
+  const [active, setActive]           = useState(0);
+  const [isModal, setIsModal]         = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  // [추가] 확대 상태를 관리하는 State
+  const [isZoomed, setIsZoomed]       = useState(false);
 
   const total          = images.length;
   const isDragging     = useRef(false);
@@ -12,8 +14,8 @@ function Carousel({ images }) {
 
   /* 확대/핀치 */
   const position          = useRef({ x: 0, y: 0 });
-  const scale             = useRef(1);
-  const start             = useRef({ x: 0, y: 0 });
+  const scale               = useRef(1);
+  const start               = useRef({ x: 0, y: 0 });
   const lastTouchDistance = useRef(0);
   const imgRef            = useRef(null);
   let   lastTap           = 0;
@@ -43,6 +45,7 @@ function Carousel({ images }) {
   const reset = () => {
     scale.current    = 1;
     position.current = { x: 0, y: 0 };
+    setIsZoomed(false); // 리셋 시 확대 상태도 해제
     updateTransform();
   };
 
@@ -83,17 +86,27 @@ function Carousel({ images }) {
     }
     if (e.touches.length === 2) {
       const newDist = getDistance(e.touches);
-      scale.current += (newDist - lastTouchDistance.current) * 0.005;
-      scale.current  = Math.max(1, Math.min(scale.current, 4));
+      const newScale = scale.current + (newDist - lastTouchDistance.current) * 0.005;
+      scale.current = Math.max(1, Math.min(newScale, 4));
       lastTouchDistance.current = newDist;
+      
+      // 핀치 줌 시에도 scale이 1보다 크면 썸네일 숨김
+      setIsZoomed(scale.current > 1.05);
     }
     clampPosition();
     updateTransform();
   };
+
   const handleDoubleTap = () => {
     const now = Date.now();
     if (now - lastTap < 300) {
-      scale.current    = scale.current > 1 ? 1 : 2;
+      if (scale.current > 1) {
+        scale.current = 1;
+        setIsZoomed(false); // 축소 시 썸네일 보임
+      } else {
+        scale.current = 2;
+        setIsZoomed(true);  // 확대 시 썸네일 숨김
+      }
       position.current = { x: 0, y: 0 };
       updateTransform();
     }
@@ -108,6 +121,7 @@ function Carousel({ images }) {
   };
   const closeModal = () => {
     setModalVisible(false);
+    setIsZoomed(false); // 모달 닫을 때 확대 상태 초기화
     setTimeout(() => setIsModal(false), 320);
   };
 
@@ -178,22 +192,26 @@ function Carousel({ images }) {
           {/* 닫기 */}
           <button className="modal-close" onClick={closeModal}>✕</button>
 
-          {/* 카운터 (상단) */}
+          {/* 카운터 (상단) - 확대 시 같이 숨기고 싶다면 여기에 {!isZoomed && ...} 적용 가능 */}
           <div className="modal-top-counter">{active + 1} / {total}</div>
 
-          {/* 좌우 화살표 */}
-          <button
-            className="modal-arrow modal-prev"
-            onClick={(e) => { e.stopPropagation(); setActive((p) => (p - 1 + total) % total); }}
-          >‹</button>
-          <button
-            className="modal-arrow modal-next"
-            onClick={(e) => { e.stopPropagation(); setActive((p) => (p + 1) % total); }}
-          >›</button>
+          {/* 좌우 화살표 - 확대 중에는 조작이 꼬이지 않게 숨김 처리 */}
+          {!isZoomed && (
+            <>
+              <button
+                className="modal-arrow modal-prev"
+                onClick={(e) => { e.stopPropagation(); setActive((p) => (p - 1 + total) % total); }}
+              >‹</button>
+              <button
+                className="modal-arrow modal-next"
+                onClick={(e) => { e.stopPropagation(); setActive((p) => (p + 1) % total); }}
+              >›</button>
+            </>
+          )}
 
           {/* 메인 이미지 */}
           <div className="modal-center" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-frame">
+            <div className="modal-frame" style={{ overflow: isZoomed ? 'visible' : 'hidden' }}>
               <img
                 ref={imgRef}
                 className="modal-image"
@@ -202,23 +220,26 @@ function Carousel({ images }) {
                 draggable={false}
                 onTouchStart={(e) => { handleTouchStart(e); handleDoubleTap(); }}
                 onTouchMove={handleTouchMove}
+                style={{ cursor: isZoomed ? 'zoom-out' : 'zoom-in' }}
               />
             </div>
           </div>
 
-          {/* 썸네일 바 */}
-          <div className="thumbnail-bar" onClick={(e) => e.stopPropagation()}>
-            {images.map((img, i) => (
-              <div
-                key={i}
-                className={`thumb-card ${i === active ? "active-thumb" : ""}`}
-                onClick={() => setActive(i)}
-              >
-                <img src={img} alt="" draggable={false} />
-                {i === active && <div className="thumb-shine" />}
-              </div>
-            ))}
-          </div>
+          {/* 썸네일 바 - [수정됨] 확대(isZoomed) 상태가 아닐 때만 렌더링 */}
+          {!isZoomed && (
+            <div className="thumbnail-bar" onClick={(e) => e.stopPropagation()}>
+              {images.map((img, i) => (
+                <div
+                  key={i}
+                  className={`thumb-card ${i === active ? "active-thumb" : ""}`}
+                  onClick={() => setActive(i)}
+                >
+                  <img src={img} alt="" draggable={false} />
+                  {i === active && <div className="thumb-shine" />}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </>
