@@ -2,7 +2,7 @@
 
 * { box-sizing: border-box; }
 
-/* 1. 홈 캐러셀 */
+/* 1. 홈 캐러셀 (기존 유지) */
 .carousel {
   position: relative; width: 100%; height: 62vh; min-height: 340px;
   display: flex; justify-content: center; align-items: center;
@@ -34,7 +34,40 @@
   display: flex; align-items: center; justify-content: center;
 }
 
-/* 2. 모달 내비게이션 */
+/* 2. 3D 스테이지 & 회전 레이아웃 (추가/수정) */
+.modal-stage-3d {
+  position: relative; width: 100vw; height: 100vh;
+  perspective: 1400px; /* 원근감 */
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; padding-bottom: 120px; /* 썸네일바 공간 확보 */
+}
+
+.zoomed-mode .modal-stage-3d { padding-bottom: 0; }
+
+.wrapper-3d {
+  position: relative; width: 280px; height: 400px;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.item-3d {
+  position: absolute; inset: 0;
+  backface-visibility: hidden;
+  transition: all 0.8s ease-in-out;
+  will-change: transform, opacity;
+}
+
+.item-3d.active { z-index: 100; }
+
+.modal-image-3d {
+  width: 100%; height: 100%;
+  object-fit: cover; border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  display: block; pointer-events: none;
+}
+
+/* 3. 모달 내비게이션 (기존 유지) */
 .modal-nav-btn {
   position: fixed; top: 50%; transform: translateY(-50%);
   background: none; border: none; color: rgba(255, 255, 255, 0.6);
@@ -43,27 +76,10 @@
   transition: all 0.3s ease; padding: 15px; text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 .modal-nav-btn:hover { color: #fff; transform: translateY(-50%) scale(1.15); }
-.modal-nav-btn.prev { left: 5px; }
-.modal-nav-btn.next { right: 5px; }
+.modal-nav-btn.prev { left: 10px; }
+.modal-nav-btn.next { right: 10px; }
 
-/* 3. 아이폰 미리보기 */
-.ios-preview-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.4); 
-  backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-  z-index: 25000; display: flex; align-items: center; justify-content: center;
-  animation: fadeIn 0.3s ease;
-}
-.ios-preview-card {
-  width: 280px; height: 420px; border-radius: 24px; overflow: hidden;
-  box-shadow: 0 30px 60px rgba(0,0,0,0.5);
-  animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.ios-preview-card img { width: 100%; height: 100%; object-fit: cover; }
-
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes popUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-/* 4. 모달 공통 */
+/* 4. 모달 공통 & 썸네일 (기존 유지) */
 .modal { position: fixed; inset: 0; z-index: 9999; background: rgba(18, 10, 4, 0.0); display: flex; align-items: center; justify-content: center; transition: background 0.32s ease; }
 .modal-open { background: rgba(18, 10, 4, 0.95); }
 
@@ -75,39 +91,50 @@
   cursor: pointer; z-index: 16000; transition: 0.2s;
 }
 
-.modal-center { display: flex; flex-direction: column; align-items: center; transition: all 0.4s ease; }
+.modal-center { display: flex; flex-direction: column; align-items: center; transition: all 0.4s ease; width: 100%; height: 100%; }
+.modal-top-counter { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); font-family: 'Cormorant Garamond', serif; font-size: 14px; color: rgba(255, 255, 255, 0.5); letter-spacing: 0.22em; z-index: 10; }
 
-/* 확대 모드 스타일 */
-.modal-center.zoomed-mode { width: 100vw; height: 100vh; justify-content: center; }
-.modal-center.zoomed-mode .modal-frame { padding: 0; border: none; background: none; width: 100%; height: 100%; }
-.modal-center.zoomed-mode .modal-image { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; border-radius: 0; }
-
-.modal-top-counter { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); font-family: 'Cormorant Garamond', serif; font-size: 14px; color: rgba(255, 255, 255, 0.5); letter-spacing: 0.22em; }
-.modal-frame { padding: 8px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.10); border-radius: 4px; transition: all 0.4s ease; display: flex; align-items: center; justify-content: center; }
-.modal-image { display: block; max-width: 80vw; max-height: 56vh; object-fit: contain; will-change: transform; }
-
-/* 5. 썸네일 바 */
-.thumbnail-bar-wrap { position: absolute; bottom: 0; left: 0; width: 100%; padding: 12px 15px 40px; background: linear-gradient(to top, rgba(18, 10, 4, 1) 40%, transparent 100%); display: flex; flex-direction: column; align-items: center; gap: 1px; z-index: 10010; }
+.thumbnail-bar-wrap { 
+  position: absolute; bottom: 0; left: 0; width: 100%; 
+  padding: 12px 0 40px;
+  background: linear-gradient(to top, rgba(18, 10, 4, 1) 40%, transparent 100%); 
+  display: flex; flex-direction: column; align-items: center; gap: 1px; z-index: 10010; 
+}
 .drag-handle-area { width: 100%; height: 10px; display: flex; align-items: center; justify-content: center; touch-action: none; cursor: row-resize; }
 .drag-handle-line { width: 40px; height: 5px; background: rgba(255, 255, 255, 0.3); border-radius: 10px; }
 
-.thumbnail-bar { display: flex; gap: 8px; padding: 10px 14px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.10); border-radius: 14px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); max-width: 90vw; overflow-x: auto; scrollbar-width: none; }
-.thumb-card { width: 52px; height: 68px; border-radius: 8px; overflow: hidden; opacity: 0.42; border: 2px solid transparent; cursor: pointer; flex-shrink: 0; transition: 0.28s; position: relative; }
+.thumbnail-bar { 
+  display: flex; gap: 8px; padding: 10px 20px; 
+  background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.10); border-radius: 14px; 
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); 
+  max-width: 90vw; overflow-x: auto; 
+  scrollbar-width: none; scroll-behavior: smooth; 
+  -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; 
+}
+.thumbnail-bar::-webkit-scrollbar { display: none; }
+
+.thumb-card { 
+  width: 52px; height: 68px; border-radius: 8px; overflow: hidden; 
+  opacity: 0.42; border: 2px solid transparent; cursor: pointer; 
+  flex-shrink: 0; transition: 0.28s; position: relative; 
+  scroll-snap-align: center; 
+}
 .thumb-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .active-thumb { opacity: 1; border-color: #c4a35a; transform: translateY(-3px) scale(1.06); box-shadow: 0 4px 16px rgba(196, 163, 90, 0.44); }
-.thumb-shine { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%); }
 
-/* 6. 전체보기 그리드 */
+/* 5. 그리드 & 기타 (기존 유지) */
 .modal-grid-view { position: absolute; inset: 0; background: rgba(18, 10, 4, 0.98); padding: 100px 20px 50px; overflow-y: auto; z-index: 10005; animation: gridSlideUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
 @keyframes gridSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
 .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 600px; margin: 0 auto; }
 .grid-item { aspect-ratio: 1/1; border-radius: 12px; overflow: hidden; opacity: 0.7; border: 2px solid rgba(255, 255, 255, 0.1); transition: 0.3s; cursor: pointer; }
 .grid-item img { width: 100%; height: 100%; object-fit: cover; }
-.active-grid { opacity: 1; border-color: #c4a35a; box-shadow: 0 0 15px rgba(196, 163, 90, 0.4); }
+.active-grid { opacity: 1; border-color: #c4a35a; }
+
+.ios-preview-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); z-index: 25000; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s ease; }
+.ios-preview-card { width: 280px; height: 420px; border-radius: 24px; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.5); animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.ios-preview-card img { width: 100%; height: 100%; object-fit: cover; }
 
 @media (max-width: 480px) {
-  .carousel-item { width: 168px; height: 236px; }
-  .grid-container { grid-template-columns: repeat(3, 1fr); }
-  .modal-nav-btn { font-size: 32px; padding: 10px; }
+  .wrapper-3d { width: 220px; height: 320px; }
+  .modal-stage-3d { perspective: 1000px; }
 }

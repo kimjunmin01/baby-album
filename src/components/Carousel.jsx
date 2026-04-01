@@ -2,28 +2,43 @@ import { useRef, useState, useEffect } from "react";
 import "../styles/carousel.css";
 
 function Carousel({ images }) {
-  const [active, setActive]           = useState(0);
-  const [isModal, setIsModal]         = useState(false);
+  const [active, setActive] = useState(0);
+  const [isModal, setIsModal] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const [isZoomed, setIsZoomed]       = useState(false);
-  const [isGridView, setIsGridView]   = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false); // 💡 시원한 뷰를 위한 상태 추가
-  const [dragY, setDragY]             = useState(0);
-  const [previewIdx, setPreviewIdx]   = useState(null);
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [isGridView, setIsGridView] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [dragY, setDragY] = useState(0);
+  const [previewIdx, setPreviewIdx] = useState(null);
 
-  const total          = images.length;
-  const isDragging     = useRef(false);
-  const dragStartX     = useRef(0);
+  const total = images.length;
+  const isDragging = useRef(false);
+  const dragStartX = useRef(0);
   const thumbDragStart = useRef(0);
-  const pressTimer     = useRef(null);
-  const isLongPress    = useRef(false); 
-  const imgRef         = useRef(null);
-  let lastTap          = 0;
+  const pressTimer = useRef(null);
+  const isLongPress = useRef(false);
+  const imgRef = useRef(null);
+  let lastTap = 0;
+
+  // 💡 썸네일 자동 스크롤을 위한 Ref 추가
+  const thumbBarRef = useRef(null);
+  const activeThumbRef = useRef(null);
 
   const [zoomPos, setZoomPos] = useState({ x: 0, y: 0 });
   const lastPos = useRef({ x: 0, y: 0 });
   const startPos = useRef({ x: 0, y: 0 });
-  const ZOOM_SCALE = 1.8; 
+  const ZOOM_SCALE = 1.8;
+
+  // 💡 active가 바뀔 때마다 해당 썸네일을 중앙으로 스크롤하는 로직
+  useEffect(() => {
+    if (isModal && !isGridView && activeThumbRef.current && thumbBarRef.current) {
+      activeThumbRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
+  }, [active, isModal, isGridView]);
 
   const openModal = (index) => {
     setActive(index);
@@ -35,7 +50,7 @@ function Carousel({ images }) {
     setModalVisible(false);
     setIsZoomed(false);
     setIsGridView(false);
-    setIsFullscreen(false); // 💡 닫을 때 풀스크린 초기화
+    setIsFullscreen(false);
     setPreviewIdx(null);
     setDragY(0);
     setZoomPos({ x: 0, y: 0 });
@@ -50,7 +65,6 @@ function Carousel({ images }) {
       setZoomPos({ x: 0, y: 0 });
       lastPos.current = { x: 0, y: 0 };
     } else if (isFullscreen) {
-      // 💡 시원한 뷰에서 X를 누르면 다시 그리드 창으로 복귀
       setIsFullscreen(false);
       setIsGridView(true);
     } else if (isGridView) {
@@ -140,9 +154,8 @@ function Carousel({ images }) {
             <button className="modal-close-global" onClick={handleCloseBtn}>✕</button>
           )}
 
-          {/* 💡 시원한 꽉 찬 뷰 (그리드에서 클릭 시) */}
           {isFullscreen ? (
-            <div className="fullscreen-viewer" style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="fullscreen-viewer" style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000' }}>
                <img 
                  src={images[active]} 
                  alt="" 
@@ -150,8 +163,15 @@ function Carousel({ images }) {
                />
             </div>
           ) : !isGridView ? (
-            /* 기존 상세 보기 모달 (네비게이션, 썸네일 포함) */
-            <div className={`modal-center ${isZoomed ? "zoomed-mode" : ""}`} onClick={(e) => e.stopPropagation()}>
+            <div 
+                className={`modal-center ${isZoomed ? "zoomed-mode" : ""}`} 
+                onClick={(e) => e.stopPropagation()}
+                style={{ 
+                    transform: `scale(${1 - (dragY / 1000)}) translateY(${-dragY / 10}px)`,
+                    opacity: 1 - (dragY / 500),
+                    transition: dragY === 0 ? '0.4s cubic-bezier(0.2, 0.8, 0.2, 1)' : 'none' 
+                }}
+            >
               {!isZoomed && <div className="modal-top-counter">{active + 1} / {total}</div>}
               {!isZoomed && (
                 <>
@@ -189,7 +209,6 @@ function Carousel({ images }) {
               </div>
             </div>
           ) : (
-            /* 그리드 뷰 */
             <div className="modal-grid-view" onClick={(e) => e.stopPropagation()}>
               <div className="grid-container">
                 {images.map((img, i) => (
@@ -207,7 +226,6 @@ function Carousel({ images }) {
                       clearTimeout(pressTimer.current);
                       if (!isLongPress.current && previewIdx === null) {
                         setActive(i);
-                        // 💡 여기서 시원한 뷰(Fullscreen)로 진입!
                         setIsFullscreen(true);
                         setIsGridView(false); 
                       }
@@ -228,7 +246,6 @@ function Carousel({ images }) {
             </div>
           )}
 
-          {/* 롱프레스 프리뷰 */}
           {previewIdx !== null && (
             <div className="ios-preview-overlay" onClick={(e) => { e.stopPropagation(); setPreviewIdx(null); }}>
               <div className="ios-preview-card" onClick={(e) => e.stopPropagation()}>
@@ -237,22 +254,42 @@ function Carousel({ images }) {
             </div>
           )}
 
-          {/* 하단 썸네일 바: 상세보기 모드(상세 뷰)에서만 노출 */}
           {!isZoomed && !isGridView && !isFullscreen && (
             <div className="thumbnail-bar-wrap"
               onClick={(e) => e.stopPropagation()}
-              style={{ transform: `translateY(${-dragY}px)`, transition: dragY === 0 ? '0.4s cubic-bezier(0.2, 0.8, 0.2, 1)' : 'none' }}
+              style={{ 
+                transform: `translateY(${-dragY}px)`, 
+                backgroundColor: `rgba(255, 255, 255, ${dragY / 250})`,
+                backdropFilter: `blur(${dragY / 15}px)`,
+                transition: dragY === 0 ? '0.4s cubic-bezier(0.2, 0.8, 0.2, 1)' : 'none' 
+              }}
             >
               <div className="drag-handle-area"
+                onStartShouldSetResponder={() => true}
                 onTouchStart={(e) => { thumbDragStart.current = e.touches[0].clientY; }}
-                onTouchMove={(e) => { if (!isGridView) { const d = thumbDragStart.current - e.touches[0].clientY; if (d > 0) setDragY(Math.min(d, 180)); } }}
-                onTouchEnd={() => { if (dragY > 80) setIsGridView(true); setDragY(0); }}
+                onTouchMove={(e) => { 
+                    if (!isGridView) { 
+                        const d = thumbDragStart.current - e.touches[0].clientY; 
+                        if (d > 0) setDragY(Math.min(d, 220)); 
+                    } 
+                }}
+                onTouchEnd={() => { 
+                    if (dragY > 100) setIsGridView(true); 
+                    setDragY(0); 
+                }}
               >
                 <div className="drag-handle-line" />
               </div>
-              <div className="thumbnail-bar">
+              {/* 💡 썸네일 바 Ref 연결 */}
+              <div className="thumbnail-bar" ref={thumbBarRef}>
                 {images.map((img, i) => (
-                  <div key={i} className={`thumb-card ${i === active ? "active-thumb" : ""}`} onClick={() => setActive(i)}>
+                  <div 
+                    key={i} 
+                    // 💡 현재 활성 썸네일에만 Ref 부여
+                    ref={i === active ? activeThumbRef : null}
+                    className={`thumb-card ${i === active ? "active-thumb" : ""}`} 
+                    onClick={() => setActive(i)}
+                  >
                     <img src={img} alt="" />
                     {i === active && <div className="thumb-shine" />}
                   </div>

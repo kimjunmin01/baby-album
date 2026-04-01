@@ -9,6 +9,7 @@ function Home() {
     "/images/img3.webp",
     "/images/img4.webp",
     "/images/ksr.webp",
+    "/images/baby.jpg",
   ];
 
   return (
