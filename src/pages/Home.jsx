@@ -14,16 +14,17 @@ const ALBUMS = {
         <path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>
       </svg>
     ),
-    title: "배지홍 ♥ 김세란",
+    title: "결혼앨범 테스트중",
     subtitle: "WEDDING ALBUM",
     desc: <>우연히 시작되어 필연이 된 우리의 인연이<br />이제는 세상에서 가장 단단한 사랑이 되었습니다.<br /><em>지홍과 세란, 두 사람의 첫 페이지를 이곳에 펼칩니다.</em></>,
     images: [
-      "/images/bjh.webp",
-      "/images/img1.webp",
-      "/images/img2.webp",
-      "/images/img3.webp",
-      "/images/img4.webp",
-      "/images/ksr.webp",
+      "/images/test1.JPG",
+      "/images/test2.JPG",
+      "/images/test3.JPG",
+      "/images/test4.JPG",
+      "/images/test5.JPG",
+      "/images/test6.JPG",
+      "/images/test7.JPG",
     ],
   },
   baby: {
@@ -38,14 +39,18 @@ const ALBUMS = {
         <circle cx="14.5" cy="8.5" r="0.5" fill="currentColor"/>
       </svg>
     ),
-    title: "우리 아기",
+    title: "애기앨범 테스트중",
     subtitle: "BABY ALBUM",
     desc: <>세상에서 가장 작고 소중한 존재<br />너의 모든 순간이 기적이야.<br /><em>하루하루 자라는 너의 이야기를 담아.</em></>,
     images: [
-      "/images/baby.jpg",
-      "/images/img1.webp",
-      "/images/img2.webp",
-      "/images/img3.webp",
+      "/images/baby1.JPG",
+      "/images/baby2.JPG",
+      "/images/baby3.JPG",
+      "/images/baby4.JPG",
+      "/images/baby5.JPG",
+      "/images/baby6.JPG",
+      "/images/baby7.JPG",
+
     ],
   },
   ultrasound: {
@@ -58,13 +63,21 @@ const ALBUMS = {
         <rect x="2" y="3" width="20" height="18" rx="2"/>
       </svg>
     ),
-    title: "처음 만난 날",
+    title: "초음파 앨범 테스트",
     subtitle: "ULTRASOUND ALBUM",
     desc: <>작은 심장이 뛰는 소리를 처음 들었을 때<br />세상이 달라 보였어.<br /><em>태동의 순간순간을 기억하며.</em></>,
     images: [
-      "/images/1ju.jpg",
-      "/images/2ju.jpg",
-      "/images/3ju.jpg",
+      "/images/co1.JPG",
+      "/images/co2.JPG",
+      "/images/co3.JPG",
+      "/images/co4.JPG",
+      "/images/co5.JPG",
+      "/images/co6.JPG",
+      "/images/co7.JPG",
+      "/images/co8.JPG",
+      "/images/co9.JPG",
+      "/images/co10.JPG",
+
     ],
   },
 };
@@ -105,7 +118,7 @@ function Home() {
           <p className="home-label">{album.subtitle}</p>
           <h1 className="title">
             {activeTab === "wedding" ? (
-              <>배지홍 <span className="heart">♥</span> 김세란</>
+              <>테스트 <span className="heart">♥</span> 테스트</>
             ) : (
               album.title
             )}
