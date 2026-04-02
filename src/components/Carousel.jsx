@@ -31,7 +31,8 @@ function Carousel({ images, albumId, onModalChange }) {
   const [editingIdx, setEditingIdx]   = useState(null);
   const [memoText, setMemoText]       = useState("");
   const [isMemoOpen, setIsMemoOpen]   = useState(false);
-  const [isFlipped, setIsFlipped]     = useState(false); // 꽉찬뷰 카드 플립
+  const [isFlipped, setIsFlipped]     = useState(false);
+  const [isStoryView, setIsStoryView] = useState(false); // 스토리 뷰어
 
   // ── Refs ─────────────────────────────────────────────────
   const total       = images.length;
@@ -51,7 +52,7 @@ function Carousel({ images, albumId, onModalChange }) {
   useEffect(() => {
     setActive(0); setIsModal(false); setModalVisible(false);
     setIsGridView(false); setIsFullscreen(false); setIsZoomed(false);
-    setPreviewIdx(null); setDragY(0); setIsMemoOpen(false); setIsFlipped(false);
+    setPreviewIdx(null); setDragY(0); setIsMemoOpen(false); setIsFlipped(false); setIsStoryView(false);
     setZoomPos({ x: 0, y: 0 });
     lastPos.current = { x: 0, y: 0 };
     isLongPress.current = false;
@@ -60,35 +61,61 @@ function Carousel({ images, albumId, onModalChange }) {
   }, [albumId]);
 
   // ── 메모 로드 ────────────────────────────────────────────
-  const memoKey = useCallback((idx) => `memo-${albumId}-${idx}`, [albumId]);
+  const memoKey     = useCallback((idx) => `memo-${albumId}-${idx}`, [albumId]);
+  const memoPosKey  = useCallback((idx) => `memo-pos-${albumId}-${idx}`, [albumId]);
 
   useEffect(() => {
     const map = {};
     images.forEach((_, i) => {
       const saved = localStorage.getItem(memoKey(i));
-      if (saved) map[memoKey(i)] = saved;
+      if (saved) {
+        const pos = localStorage.getItem(memoPosKey(i));
+        map[memoKey(i)] = {
+          text: saved,
+          x: pos ? JSON.parse(pos).x : 0.5,
+          y: pos ? JSON.parse(pos).y : 0.5,
+        };
+      }
     });
     setMemoMap(map);
-  }, [albumId, images, memoKey]);
+  }, [albumId, images, memoKey, memoPosKey]);
 
   // ── 메모 저장/삭제 ───────────────────────────────────────
-  const saveMemo = () => {
-    const key = memoKey(editingIdx);
-    setMemoMap((prev) => ({ ...prev, [key]: memoText }));
-    localStorage.setItem(key, memoText);
+  const saveMemo = (pos) => {
+    const key    = memoKey(editingIdx);
+    const posKey = memoPosKey(editingIdx);
+    const textToSave = typeof memoText === "string" ? memoText : "";
+    const entry = { text: textToSave, x: pos?.x ?? 0.5, y: pos?.y ?? 0.5 };
+    setMemoMap((prev) => ({ ...prev, [key]: entry }));
+    localStorage.setItem(key, textToSave);
+    localStorage.setItem(posKey, JSON.stringify({ x: entry.x, y: entry.y }));
     setEditingIdx(null); setMemoText("");
   };
 
   const deleteMemo = () => {
-    const key = memoKey(editingIdx);
+    const key    = memoKey(editingIdx);
+    const posKey = memoPosKey(editingIdx);
     setMemoMap((prev) => { const next = { ...prev }; delete next[key]; return next; });
     localStorage.removeItem(key);
+    localStorage.removeItem(posKey);
     setEditingIdx(null); setMemoText("");
+  };
+
+  // 메모 텍스트 꺼내기 헬퍼
+  const getMemoText = (idx) => {
+    const v = memoMap[memoKey(idx)];
+    if (!v) return null;
+    return typeof v === "string" ? v : v.text;
+  };
+  const getMemoPos = (idx) => {
+    const v = memoMap[memoKey(idx)];
+    if (!v || typeof v === "string") return { x: 0.5, y: 0.5 };
+    return { x: v.x ?? 0.5, y: v.y ?? 0.5 };
   };
 
   const openMemo = (e, idx) => {
     e.stopPropagation();
-    setMemoText(memoMap[memoKey(idx)] || "");
+    setMemoText(getMemoText(idx) || "");
     setEditingIdx(idx);
   };
 
@@ -106,7 +133,7 @@ function Carousel({ images, albumId, onModalChange }) {
   const closeModal = () => {
     setModalVisible(false);
     setIsZoomed(false); setIsGridView(false); setIsFullscreen(false);
-    setPreviewIdx(null); setDragY(0); setIsMemoOpen(false); setIsFlipped(false);
+    setPreviewIdx(null); setDragY(0); setIsMemoOpen(false); setIsFlipped(false); setIsStoryView(false);
     setZoomPos({ x: 0, y: 0 }); lastPos.current = { x: 0, y: 0 };
     onModalChange?.(false);
     setTimeout(() => setIsModal(false), 320);
@@ -209,67 +236,27 @@ function Carousel({ images, albumId, onModalChange }) {
             <button className="modal-close-global" onClick={handleCloseBtn}>✕</button>
           )}
 
-          {/* 꽉찬뷰 — 카드 플립 */}
+          {/* 꽉찬뷰 */}
           {isFullscreen ? (
             <div className="fullscreen-wrap" onClick={(e) => e.stopPropagation()}>
 
               {/* Tad 버튼 */}
               <button
-                className={`tad-btn ${isFlipped ? "tad-btn--active" : ""}`}
-                onClick={() => setIsFlipped((v) => !v)}
+                className={`tad-btn ${getMemoText(active) ? "" : "tad-btn--no-memo"}`}
+                onClick={() => { if (getMemoText(active)) setIsStoryView(true); }}
               >
-                {isFlipped ? (
-                  <>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
-                    </svg>
-                    사진 보기
-                  </>
-                ) : (
-                  <>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
-                    </svg>
-                    Tad
-                  </>
-                )}
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+                Tad
               </button>
 
-              {/* 카드 플립 */}
-              <div className={`flip-card ${isFlipped ? "flipped" : ""}`}>
+              {/* 이미지 */}
+              <div className="flip-card">
                 <div className="flip-card-inner">
-
-                  {/* 앞면: 이미지 */}
                   <div className="flip-front">
                     <img src={images[active]} alt="" />
                   </div>
-
-                  {/* 뒷면: 같은 이미지 흐릿 + 메모 오버레이 */}
-                  <div className="flip-back">
-                    <img className="flip-back-img" src={images[active]} alt="" />
-                    <div className="flip-back-overlay">
-                      {memoMap[memoKey(active)] ? (
-                        <>
-                          <div className="flip-memo-deco">
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(196,163,90,0.7)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
-                            </svg>
-                          </div>
-                          <p className="flip-memo-label">나의 메모</p>
-                          <div className="flip-memo-divider" />
-                          <p className="flip-memo-text">{memoMap[memoKey(active)]}</p>
-                        </>
-                      ) : (
-                        <div className="flip-memo-empty">
-                          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,248,235,0.3)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                          </svg>
-                          <p>아직 메모가 없어요</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
                 </div>
               </div>
             </div>
@@ -314,12 +301,8 @@ function Carousel({ images, albumId, onModalChange }) {
                 />
               </div>
 
-              {!isZoomed && memoMap[memoKey(active)] && (
-                <MemoToggleBtn isOpen={isMemoOpen} onClick={(e) => { e.stopPropagation(); setIsMemoOpen((v) => !v); }} />
-              )}
-
-              {!isZoomed && isMemoOpen && memoMap[memoKey(active)] && (
-                <MemoPopover text={memoMap[memoKey(active)]} onClose={(e) => { e.stopPropagation(); setIsMemoOpen(false); }} />
+              {!isZoomed && getMemoText(active) && (
+                <MemoToggleBtn isOpen={false} onClick={(e) => { e.stopPropagation(); setIsStoryView(true); }} />
               )}
             </div>
 
@@ -334,6 +317,26 @@ function Carousel({ images, albumId, onModalChange }) {
               onLongPress={(i) => setPreviewIdx(i)}
               onMemoClick={openMemo}
             />
+          )}
+
+          {/* 스토리 뷰어 — Tad/메모장 버튼 클릭 시 */}
+          {isStoryView && (
+            <div className="story-viewer" onClick={(e) => e.stopPropagation()}>
+              <button className="story-viewer-close" onClick={() => setIsStoryView(false)}>✕</button>
+              <img src={images[active]} alt="" className="story-viewer-img" />
+              <div className="story-viewer-dim" />
+              {getMemoText(active) && (
+                <div
+                  className="story-viewer-text"
+                  style={{
+                    left: `${getMemoPos(active).x * 100}%`,
+                    top:  `${getMemoPos(active).y * 100}%`,
+                  }}
+                >
+                  {getMemoText(active)}
+                </div>
+              )}
+            </div>
           )}
 
           {/* 롱프레스 프리뷰 팝업 */}

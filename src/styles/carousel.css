@@ -300,75 +300,59 @@
 }
 .ios-preview-card img { width: 100%; height: 100%; object-fit: cover; }
 
-/* ─── 메모 편집 시트 ─── */
-.memo-sheet-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+/* ─── 인스타 스토리 스타일 메모 에디터 ─── */
+.story-editor-overlay {
+  position: fixed;
+  inset: 0;
   z-index: 30000;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  animation: overlayFadeIn 0.25s ease;
-}
-@keyframes overlayFadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-.memo-sheet {
-  width: 100%;
-  max-width: 600px;
-  background: #faf6f0;
-  border-radius: 24px 24px 0 0;
-  padding: 12px 20px 40px;
-  animation: sheetSlideUp 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  background: #000;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-}
-@keyframes sheetSlideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  animation: overlayFadeIn 0.2s ease;
 }
 
-.memo-sheet-handle {
-  width: 36px; height: 4px;
-  background: rgba(90, 62, 40, 0.2);
-  border-radius: 4px;
-  margin: 0 auto 4px;
-}
-
-.memo-sheet-header {
+/* 상단 툴바 */
+.story-toolbar {
+  position: relative;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 14px 18px;
+  padding-top: max(14px, env(safe-area-inset-top));
+  background: linear-gradient(to bottom, rgba(0,0,0,0.55), transparent);
 }
 
-.memo-sheet-title {
+.story-close-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  border: none; color: #fff;
+  font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.story-hint {
   font-family: 'Noto Serif KR', serif;
-  font-size: 16px;
-  font-weight: 500;
-  color: #5a3e28;
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.06em;
 }
 
-.memo-sheet-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.memo-delete-btn {
-  padding: 6px 14px;
+.story-delete-btn {
+  padding: 7px 16px;
   border-radius: 20px;
-  border: 1px solid rgba(196, 90, 90, 0.4);
-  background: rgba(196, 90, 90, 0.08);
-  color: #c45a5a;
+  border: 1px solid rgba(220, 80, 80, 0.6);
+  background: rgba(220, 80, 80, 0.15);
+  color: #ff8a8a;
   font-family: 'Noto Serif KR', serif;
   font-size: 13px;
   cursor: pointer;
-  transition: 0.2s;
 }
 
-.memo-save-btn {
-  padding: 6px 18px;
+.story-save-btn {
+  padding: 7px 20px;
   border-radius: 20px;
   border: none;
   background: linear-gradient(135deg, #c4a35a, #a8862e);
@@ -377,52 +361,85 @@
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: 0.2s;
 }
-.memo-save-btn:active { opacity: 0.85; }
 
-.memo-img-preview {
-  width: 100%;
-  height: 140px;
-  border-radius: 14px;
+/* 이미지 캔버스 */
+.story-canvas {
+  position: relative;
+  flex: 1;
   overflow: hidden;
-  border: 2px solid rgba(196, 163, 90, 0.2);
-}
-.memo-img-preview img {
-  width: 100%; height: 100%; object-fit: cover; display: block;
+  touch-action: none;
 }
 
-.memo-textarea {
+.story-bg-img {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+.story-bg-dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.18);
+  pointer-events: none;
+}
+
+/* 드래그 가능한 텍스트 블록 */
+.story-text-block {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 200px;
+  max-width: 80vw;
+}
+.story-text-block:active { cursor: grabbing; }
+
+/* 텍스트 배경 + textarea */
+.story-textarea {
   width: 100%;
-  border: 1.5px solid rgba(196, 163, 90, 0.3);
-  border-radius: 12px;
-  padding: 12px 14px;
+  min-width: 180px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(255,255,255,0.25);
+  border-radius: 14px;
+  padding: 12px 16px;
+  color: #fff;
   font-family: 'Noto Serif KR', serif;
-  font-size: 14px;
-  color: #5a3e28;
-  background: #fff;
+  font-size: 16px;           /* 16px 이상 → 모바일 자동 확대 방지 */
+  font-weight: 300;
+  line-height: 1.7;
+  text-align: center;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.6);
   resize: none;
   outline: none;
-  line-height: 1.8;
-  transition: border-color 0.2s;
+  overflow: hidden;
+  cursor: text;
+  /* 입력 내용 따라 높이 자동 조절 */
+  field-sizing: content;
 }
-.memo-textarea:focus {
+.story-textarea::placeholder {
+  color: rgba(255,255,255,0.45);
+}
+.story-textarea:focus {
   border-color: rgba(196, 163, 90, 0.7);
-}
-.memo-textarea::placeholder {
-  color: rgba(90, 62, 40, 0.35);
+  background: rgba(0,0,0,0.55);
 }
 
-.memo-char-count {
+.story-char-count {
   font-family: 'Cormorant Garamond', serif;
   font-size: 11px;
-  color: rgba(90, 62, 40, 0.4);
-  text-align: right;
-  margin-top: -8px;
-}
-
-@media (max-width: 480px) {
-  .memo-sheet { padding-bottom: max(30px, env(safe-area-inset-bottom)); }
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 0.08em;
 }
 
 @keyframes popUp { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -466,6 +483,10 @@
   background: rgba(196, 163, 90, 0.85);
   border-color: rgba(196, 163, 90, 0.9);
   color: #fff;
+}
+.tad-btn--no-memo {
+  opacity: 0.4;
+  cursor: default;
 }
 
 /* 플립 카드 — perspective 감싸개 */
@@ -578,4 +599,74 @@
   font-size: 13px;
   color: rgba(255, 248, 235, 0.4);
   letter-spacing: 0.04em;
+}
+
+/* ─── 스토리 뷰어 (Tad/메모장 버튼 클릭 시) ─── */
+.story-viewer {
+  position: absolute;
+  inset: 0;
+  z-index: 20000;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: overlayFadeIn 0.25s ease;
+}
+
+.story-viewer-close {
+  position: absolute;
+  top: max(20px, env(safe-area-inset-top));
+  left: 18px;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+  border: none; color: #fff;
+  font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 10;
+}
+
+.story-viewer-img {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.story-viewer-dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.12);
+  pointer-events: none;
+}
+
+/* 저장된 위치에 표시되는 텍스트 */
+.story-viewer-text {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  max-width: 80vw;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(255,255,255,0.2);
+  border-radius: 14px;
+  padding: 12px 18px;
+  color: #fff;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 1.7;
+  text-align: center;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.6);
+  word-break: break-all;
+  white-space: pre-wrap;
+  pointer-events: none;
+  animation: storyTextPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes storyTextPop {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.85); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }

@@ -59,7 +59,7 @@ function Home() {
           <p className="home-label">{album.subtitle}</p>
           <h1 className="title">
             {album.isWedding
-              ? <>배지홍 <span className="heart">♥</span> 김세란</>
+              ? <>테스트<span className="heart">♥</span>테스트</>
               : album.title
             }
           </h1>

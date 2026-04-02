@@ -73,11 +73,31 @@ function GridView({
               {memoMap[memoKey(i)] ? <EditedPenIcon /> : <PenIcon />}
             </button>
 
-            {memoMap[memoKey(i)] && (
-              <div className="grid-memo-preview">
-                <span>{memoMap[memoKey(i)]}</span>
-              </div>
-            )}
+            
+            {/* 클로드가 남긴 코드
+                {memoMap[memoKey(i)] && (
+                    <div className="grid-memo-preview">
+                    <span>{memoMap[memoKey(i)]}</span>
+                </div>
+                )}
+            */}
+
+                {memoMap[memoKey(i)] && (
+                    <div 
+                        className="grid-memo-preview"
+                        style={{
+                        position: 'absolute',
+                        left: `${memoMap[memoKey(i)].x}%`, // 저장된 x 좌표 사용
+                        top: `${memoMap[memoKey(i)].y}%`,  // 저장된 y 좌표 사용
+                        transform: 'translate(-50%, -50%)', // 중심점 맞추기
+                        pointerEvents: 'none' // 클릭 방해 금지
+                    }}
+                >
+                    {/* 화면에 보여줄 '글자'는 객체 내부의 text 속성만! */}
+                    <span>{memoMap[memoKey(i)].text}</span>
+                    </div>
+                )}
+
           </div>
         ))}
       </div>
