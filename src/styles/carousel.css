@@ -426,3 +426,156 @@
 }
 
 @keyframes popUp { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* ─── 꽉찬뷰 + 카드 플립 ─── */
+.fullscreen-wrap {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a0602;
+}
+
+/* Tad 버튼 */
+.tad-btn {
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 18px;
+  background: rgba(30, 18, 8, 0.6);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(196, 163, 90, 0.45);
+  border-radius: 20px;
+  color: rgba(255, 255, 255, 0.88);
+  font-family: 'Noto Serif KR', serif;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  z-index: 100;
+  white-space: nowrap;
+  transition: all 0.22s ease;
+}
+.tad-btn--active {
+  background: rgba(196, 163, 90, 0.85);
+  border-color: rgba(196, 163, 90, 0.9);
+  color: #fff;
+}
+
+/* 플립 카드 — perspective 감싸개 */
+.flip-card {
+  position: relative;
+  width: min(340px, 88vw);
+  height: min(480px, 72vh);
+  perspective: 1200px;
+}
+
+/* 카드 내부 — 실제로 회전하는 요소 */
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1);
+  border-radius: 20px;
+}
+.flip-card.flipped .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+/* 앞면 / 뒷면 공통 */
+.flip-front,
+.flip-back {
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* 앞면: 이미지 */
+.flip-front {
+  background: #000;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+}
+.flip-front img {
+  width: 100%; height: 100%; object-fit: contain;
+}
+
+/* 뒷면: 이미지(흐릿) + 메모 오버레이 */
+.flip-back {
+  transform: rotateY(180deg);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+  background: #000;
+}
+
+/* 배경 이미지 — 흐릿하고 어둡게 */
+.flip-back-img {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  opacity: 0.22;
+  filter: blur(6px) saturate(0.5);
+  transform: scale(1.05); /* blur 가장자리 잘림 방지 */
+}
+
+/* 메모 오버레이 */
+.flip-back-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 28px;
+  gap: 0;
+}
+
+.flip-memo-deco { margin-bottom: 10px; opacity: 0.8; }
+
+.flip-memo-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  color: rgba(196, 163, 90, 0.9);
+  margin-bottom: 14px;
+}
+
+.flip-memo-divider {
+  width: 40px; height: 1px;
+  background: rgba(196, 163, 90, 0.5);
+  margin-bottom: 20px;
+}
+
+.flip-memo-text {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 15px;
+  font-weight: 300;
+  color: rgba(255, 248, 235, 0.95);
+  line-height: 2;
+  text-align: center;
+  word-break: break-all;
+  white-space: pre-wrap;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.6);
+}
+
+/* 메모 없을 때 */
+.flip-memo-empty {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 14px;
+}
+.flip-memo-empty p {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 13px;
+  color: rgba(255, 248, 235, 0.4);
+  letter-spacing: 0.04em;
+}
